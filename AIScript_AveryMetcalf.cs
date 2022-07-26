@@ -10,16 +10,12 @@ public class AIScript_AveryMetcalf : MonoBehaviour {
     public float playerSpeed;
     public int[] beltDirections;
     public float[] buttonLocations;
+	bool Move = false;
+	float PressB;
+	float minPushDistance = 1.0f;
+    
 	
-	
-	
-    float minPushDistance = 1.0f;
-    float buttonToPress;
-	bool isMoving = false;
 
-	
-	
-	// Use this for initialization
 	void Start () {
         mainScript = GetComponent<CharacterScript>();
 
@@ -27,46 +23,49 @@ public class AIScript_AveryMetcalf : MonoBehaviour {
         {
             print("No CharacterScript found on " + gameObject.name);
             this.enabled = false;
-        }
+        	}
 
         buttonLocations = mainScript.getButtonLocations();
 
         playerSpeed = mainScript.getPlayerSpeed();
-	}
+		}
 
 		
-		 void Update(){
+	void Update(){
         buttonCooldowns = mainScript.getButtonCooldowns();
         beltDirections = mainScript.getBeltDirections();
-        
-		//If were not moving, push a button
-		if(!isMoving){
+        playerSpeed = mainScript.getPlayerSpeed();
+		buttonLocations = mainScript.getButtonLocations();
+		 
+			 
+		//If we are not moving, find the closest button to push
+		if(!Move){
 			FindClosestButton();
-		//Otherwise move to a button to push
+		
 		}else{
-			MoveToButton(buttonToPress);
-		}
-    }
+			// Move to button and press button
+			MoveToButton(PressB);
+			}
+    	}
 
-    void MoveToButton(float button){
+	void MoveToButton(float button){
 		float minDistance = Mathf.Abs(button - mainScript.getCharacterLocation());
         //If minimum distance is less than the minimum push distance then push the button
 		if (minDistance < minPushDistance){
             mainScript.push();
             
             //switch to pushing
-			isMoving = false;
-        }else{
+			Move = false;
+    }else{
 			// Depending on character location move up or down and push
-			if ((button - mainScript.getCharacterLocation()) > 0){      
+		if ((button - mainScript.getCharacterLocation()) > 0){      
                 mainScript.moveUp();
 				mainScript.push();
-            }else if ((button - mainScript.getCharacterLocation()) < 0){
-                mainScript.moveDown();
-				mainScript.push();
-            }
-        }
-    }
+    }else if ((button - mainScript.getCharacterLocation()) < 0){
+                mainScript.moveDown();			
+            	}
+        	}
+    	}
 
 	// Finding the closest button
     void FindClosestButton(){
@@ -74,22 +73,21 @@ public class AIScript_AveryMetcalf : MonoBehaviour {
         float targetButton = 0;
 
 		//Look for closest button
-        for (int i = 0; i < buttonLocations.Length; i++){
+        for (int j = 0; j < buttonLocations.Length; j++){
 			
 			// If button is done cooling down and belt is not moving or if belt is moving towards me
-            if (buttonCooldowns[i] <= 0 && (beltDirections[i] == -1 || beltDirections[i] == 0)){
+     	if (buttonCooldowns[j] <= 0 && (beltDirections[j] == -1 || beltDirections[j] == 0)){
 				
 				// If button location - character location is less that the minimum distance
-				if ((Mathf.Abs(buttonLocations[i] - mainScript.getCharacterLocation())) < minDistance){
-					
-					minDistance = Mathf.Abs(buttonLocations[i] - mainScript.getCharacterLocation());
-					targetButton = buttonLocations[i];
+		if ((Mathf.Abs(buttonLocations[j] - mainScript.getCharacterLocation())) < minDistance){					
+					minDistance = Mathf.Abs(buttonLocations[j] - mainScript.getCharacterLocation());
+					targetButton = buttonLocations[j];
                 }
             }
         }
-
+		
 		// If moving press the closest button
-        buttonToPress = targetButton;
-		isMoving = true;
-    }		
-}
+        PressB = targetButton;
+		Move = true;
+    		}		
+		}
